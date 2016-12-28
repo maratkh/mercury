@@ -1,0 +1,546 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "v1",
+        "title": "Mercury API",
+        "description": "Платформа Mercury -  электронный сервис для интернет-магазинов по увеличению продаж путем предоставления покупателям возможности оплаты покупок на условиях отсрочки и рассрочки суммы покупки («Купи сейчас, оплати потом»)\n\n## Limits\nN/A\n\n## Deleting Objects\nWe do our best to have all our URLs be\n[RESTful](http://en.wikipedia.org/wiki/Representational_state_transfer).\nEvery endpoint (URL) may support one of four different http verbs. GET\nrequests fetch information about an object, POST requests create objects,\nPUT requests update objects, and finally DELETE requests will delete\nobjects.\n\n## Structure\n\n### The Envelope\nEvery response is contained by an envelope. That is, each response has a\npredictable set of keys with which you can expect to interact:\n```json\n{\n    \"meta\": {\n        \"code\": 200\n    },\n    \"data\": {\n        ...\n    },\n    \"pagination\": {\n        \"next_url\": \"...\"|null,\n        \"prev_url\": \"...\"|null\n    }\n}\n```\n\n#### META\nThe meta key is used to communicate extra information about the response to\nthe developer. If all goes well, you'll only ever see a code key with value\n200. However, sometimes things go wrong, and in that case you might see a\nresponse like:\n```json\n{\n    \"meta\": {\n        \"error_type\": \"OAuthException\",\n        \"code\": 400,\n        \"error_message\": \"...\"\n    }\n}\n```\n\n#### DATA\nThe data key is the meat of the response. It may be a list or dictionary,\nbut either way this is where you'll find the data you requested.\n#### PAGINATION\nSometimes you just can't get enough. For this reason, we've provided a\nconvenient way to access more data in any request for sequential data.\nSimply call the url in the next_url parameter and we'll respond with the\nnext set of data.\n```json\n{\n    ...\n    \"pagination\": {\n        \"next_url\": \"https://api.instagram.com/v1/tags/puppy/media/recent?access_token=fb2e77d.47a0479900504cb3ab4a1f626d174d2d&max_id=13872296\"\n    }\n}\n```\n"
+    },
+    "host": "api.mercury.com",
+    "basePath": "/v1",
+    "schemes": [
+        "https"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "tags": [
+        {
+            "name": "Orders",
+            "description": "Order API covers all necessary methods to implement order management functionality for e-shops and users. Order can have following statuses :\n* **CREATED** - an order were created during this session\n* **WAITING_VERIFICATION** - customer didn't very both - phone and email\n* **WAITING_PHONE_VERIFICATION** - customer verified email but not phone. So waiting for phone verification\n* **WAITING_EMAIL_VERIFICATION** - customer verified phone but not e-mail. So waiting for email verification\n* **CUSTOMER_VERIFIED** - customer verified both - phone and email\n* **CUSTOMER_FORM_COLLECTED** - customer finished filling the form\n* **CUSTOMER_QUIT** - customer left form uncomplete\n* **PROCESSING** - processing workflow has been started\n* **CANCELLED** - order were canceled by customer\n* **DECLINED_BY_SHOP** - order were declined on the e-shops's side\n* **DECLINED_BY_CO** - order were declined by Credit Organization\n* **APPROVED** - order were approved by all the sides\n* **PAYED** - e-shop got money for this order\n* **SHIPPED** - customer got items from the order\n"
+        },
+        {
+            "name": "Requests",
+            "description": "Request is a model to send to Credit Organizations. The main magic of an application happens here. Statuses:\n  * **CREATED**\n  * **MATCHING_CO**\n  * **NO_MATCHES**\n  * **PROCESSING**\n  * **DECLINED**\n  * **WAITING_FOR_CUSTOMER**\n  * **CUSTOMER_APPROVED**\n  * **E-SHOP_APPROVED**\n  * **E-SHOP_DECLINED**\n  * **TIMEOUT**\n  * **SHIPPING**\n  * **SHPPED**\n  * **CLOSED**\n  \n"
+        },
+        {
+            "name": "CreditContracts",
+            "description": "Credit contract represent a contract signed between Credit Organization and Customer, or between Mercudy system and customer\n"
+        }
+    ],
+    "securityDefinitions": {
+        "key": {
+            "type": "apiKey",
+            "name": "Bearer",
+            "in": "header",
+            "description": "JWT token. Note that we use JWT in all the cases:\n  * To authenticate Customer\n  * To authenticate Credit Organization\n  * To authenticate E-Shop\n  * To authenticate Private API calls\n  * To authenticate 3rd Party Software\n\n  In order to achieve this we have to create authentication microservice.\n"
+        }
+    },
+    "paths": {
+        "/order": {
+            "get": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "type": "string"
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "type": "string",
+                        "enum": [
+                            "CREATED",
+                            "WAITING_VERIFICATION",
+                            "WAITING_PHONE_VERIFICATION",
+                            "WAITING_EMAIL_VERIFICATION",
+                            "CUSTOMER_VERIFIED",
+                            "CUSTOMER_FORM_COLLECTED",
+                            "CUSTOMER_QUIT",
+                            "PROCESSING",
+                            "CANCELLED",
+                            "DECLINED_BY_SHOP",
+                            "APPROVED",
+                            "PAYED",
+                            "SHIPPED"
+                        ]
+                    },
+                    {
+                        "name": "created_at",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "name": "updated_at",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "name": "customer_email",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "description": "List orders for the authenticated shop\\CO\\Customer",
+                "responses": {
+                    "200": {
+                        "description": "List of orders that matches request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/MercuryOrder"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "description": "Push event related to this order. Note, that you can push any event\n  described next in this doc. which name matches the following pattern: `Order*Event`. You should provide JWT token in order to perform this action. Server will autorize requests using JWT's\n",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/OrderCustomerInputEvent"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Customer input saved event with the saved_at and id keys in meta property",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/OrderCustomerInputEvent"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "description": "Cancel order",
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No content except meta-information would be returned",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "meta": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/order/start": {
+            "post": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/StartSessionEvent"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "description": "Starts new session in the system. We use sessions in order to keep on track user activities in the system based on the concrete shop, order and behaviour.",
+                "responses": {
+                    "200": {
+                        "description": "Created Start Session event with the saved_at and id keys in meta property",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/StartSessionEvent"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/order/placeOrder": {
+            "post": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "description": "Finally, force creation of the Order in the system",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/OrderCustomerInputEvent"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created order response",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/MercuryOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "EventMeta": {
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "correlation_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "StartSessionEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "properties": {
+                                "order": {
+                                    "$ref": "#/definitions/Order"
+                                },
+                                "customer": {
+                                    "$ref": "#/definitions/Customer"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "OrderCustomerInputEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "properties": {
+                                "customer": {
+                                    "$ref": "#/definitions/Customer"
+                                },
+                                "session_id": {
+                                    "type": "string",
+                                    "description": "ID of session"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "OrderShopAcceptEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "properties": {
+                                "customer": {
+                                    "$ref": "#/definitions/Customer"
+                                },
+                                "session_id": {
+                                    "type": "string",
+                                    "description": "ID of session"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "OrderCOAcceptEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object",
+                            "properties": {
+                                "customer": {
+                                    "$ref": "#/definitions/Customer"
+                                },
+                                "session_id": {
+                                    "type": "string",
+                                    "description": "ID of session"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "OrderUserAcceptEvent": {
+            "type": "object"
+        },
+        "MercuryOrder": {
+            "type": "object",
+            "properties": {
+                "order_id": {
+                    "type": "string"
+                },
+                "shop_order_id": {
+                    "type": "string"
+                },
+                "order_amount": {
+                    "type": "number"
+                },
+                "order_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/MercuryOrderItem"
+                    }
+                },
+                "status": {
+                    "type": "string",
+                    "example": "CREATED"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "Order": {
+            "properties": {
+                "order_id": {
+                    "type": "string"
+                },
+                "order_amount": {
+                    "type": "number"
+                },
+                "order_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OrderItem"
+                    }
+                }
+            }
+        },
+        "MercuryOrderItem": {
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "shop_category_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "OrderItem": {
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "category_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "Customer": {
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "place_of_birth": {
+                    "type": "string"
+                },
+                "documents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Document"
+                    }
+                },
+                "addresses": {
+                    "$ref": "#/definitions/CustomerAddresses"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "Document": {
+            "properties": {
+                "series": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "issued_at": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "issue_unit_name": {
+                    "type": "string"
+                },
+                "issue_unit_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "Address": {
+            "type": "object"
+        },
+        "CustomerAddresses": {
+            "properties": {
+                "shipping_address": {
+                    "$ref": "#/definitions/Address"
+                },
+                "registration_address": {
+                    "$ref": "#/definitions/Address"
+                },
+                "fact_address": {
+                    "$ref": "#/definitions/Address"
+                }
+            }
+        }
+    }
+}
