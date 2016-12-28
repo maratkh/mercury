@@ -19,7 +19,6 @@
     "tags": [
         {
             "name": "Orders",
-            "description": "Order API covers all necessary methods to implement order management functionality for e-shops and users. Order can have following statuses :\n* **CREATED** - an order were created during this session\n* **WAITING_VERIFICATION** - customer didn't very both - phone and email\n* **WAITING_PHONE_VERIFICATION** - customer verified email but not phone. So waiting for phone verification\n* **WAITING_EMAIL_VERIFICATION** - customer verified phone but not e-mail. So waiting for email verification\n* **CUSTOMER_VERIFIED** - customer verified both - phone and email\n* **CUSTOMER_FORM_COLLECTED** - customer finished filling the form\n* **CUSTOMER_QUIT** - customer left form uncomplete\n* **PROCESSING** - processing workflow has been started\n* **CANCELLED** - order were canceled by customer\n* **DECLINED_BY_SHOP** - order were declined on the e-shops's side\n* **DECLINED_BY_CO** - order were declined by Credit Organization\n* **APPROVED** - order were approved by all the sides\n* **PAYED** - e-shop got money for this order\n* **SHIPPED** - customer got items from the order\n"
         },
         {
             "name": "Requests",
