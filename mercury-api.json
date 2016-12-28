@@ -3,7 +3,7 @@
     "info": {
         "version": "v1",
         "title": "Mercury API",
-        "description": "Платформа Mercury -  электронный сервис для интернет-магазинов по увеличению продаж путем предоставления покупателям возможности оплаты покупок на условиях отсрочки и рассрочки суммы покупки («Купи сейчас, оплати потом»)\n\n## Limits\nN/A\n\n## Deleting Objects\nWe do our best to have all our URLs be\n[RESTful](http://en.wikipedia.org/wiki/Representational_state_transfer).\nEvery endpoint (URL) may support one of four different http verbs. GET\nrequests fetch information about an object, POST requests create objects,\nPUT requests update objects, and finally DELETE requests will delete\nobjects.\n\n## Structure\n\n### The Envelope\nEvery response is contained by an envelope. That is, each response has a\npredictable set of keys with which you can expect to interact:\n```json\n{\n    \"meta\": {\n        \"code\": 200\n    },\n    \"data\": {\n        ...\n    },\n    \"pagination\": {\n        \"next_url\": \"...\"|null,\n        \"prev_url\": \"...\"|null\n    }\n}\n```\n\n#### META\nThe meta key is used to communicate extra information about the response to\nthe developer. If all goes well, you'll only ever see a code key with value\n200. However, sometimes things go wrong, and in that case you might see a\nresponse like:\n```json\n{\n    \"meta\": {\n        \"error_type\": \"OAuthException\",\n        \"code\": 400,\n        \"error_message\": \"...\"\n    }\n}\n```\n\n#### DATA\nThe data key is the meat of the response. It may be a list or dictionary,\nbut either way this is where you'll find the data you requested.\n#### PAGINATION\nSometimes you just can't get enough. For this reason, we've provided a\nconvenient way to access more data in any request for sequential data.\nSimply call the url in the next_url parameter and we'll respond with the\nnext set of data.\n```json\n{\n    ...\n    \"pagination\": {\n        \"next_url\": \"https://api.instagram.com/v1/tags/puppy/media/recent?access_token=fb2e77d.47a0479900504cb3ab4a1f626d174d2d&max_id=13872296\"\n    }\n}\n```\n"
+        "description": "Платформа Mercury -  электронный сервис для интернет-магазинов по увеличению продаж путем предоставления покупателям возможности оплаты покупок на условиях отсрочки и рассрочки суммы покупки («Купи сейчас, оплати потом»)\n\n## Limits\nN/A\n\n## Deleting Objects\nWe do our best to have all our URLs be\n[RESTful](http://en.wikipedia.org/wiki/Representational_state_transfer).\nEvery endpoint (URL) may support one of four different http verbs. GET\nrequests fetch information about an object, POST requests create objects,\nPUT requests update objects, and finally DELETE requests will delete\nobjects.\n\n## Structure\n\n### Events\nWhole system is built around events. All events must follow the next structure and conventions\n```json\n  {\n    \"type\": \"user-registered\", //event type\n    \"data\": {\n      \"meta\": {\n        \"created_at\": \"2016-10-12T00:00:01Z\", // Event creation date \n                                              //In case this event were generated \n                                              //on the client, client should provide it\n        \"saved_at\": \"2016-10-12T00:00:02Z\",   // Event save to DB date\n        \"source\": \"order-context-customer\",   //source of the event \n        \"correlation_id\": \"13545a41-4a8f-49ff-9f1d-7db31d4ac06d\" //id of correlation model\n      },\n      \"payload\": {\n        ...\n      }\n    }\n  }\n```\nThe `payload` is dependant on the concrete event type. In most of the cases it's quite intuitive\n\n### The Envelope\nEvery response is contained by an envelope. That is, each response has a\npredictable set of keys with which you can expect to interact:\n```json\n{\n    \"meta\": {\n        \"code\": 200\n    },\n    \"data\": {\n        ...\n    },\n    \"pagination\": {\n        \"next_url\": \"...\"|null,\n        \"prev_url\": \"...\"|null\n    }\n}\n```\n\n#### META\nThe meta key is used to communicate extra information about the response to\nthe developer. If all goes well, you'll only ever see a code key with value\n200. However, sometimes things go wrong, and in that case you might see a\nresponse like:\n```json\n{\n    \"meta\": {\n        \"error_type\": \"OAuthException\",\n        \"code\": 400,\n        \"error_message\": \"...\"\n    }\n}\n```\n\n#### DATA\nThe data key is the meat of the response. It may be a list or dictionary,\nbut either way this is where you'll find the data you requested.\n#### PAGINATION\nSometimes you just can't get enough. For this reason, we've provided a\nconvenient way to access more data in any request for sequential data.\nSimply call the url in the next_url parameter and we'll respond with the\nnext set of data.\n```json\n{\n    ...\n    \"pagination\": {\n        \"next_url\": \"https://api.instagram.com/v1/tags/puppy/media/recent?access_token=fb2e77d.47a0479900504cb3ab4a1f626d174d2d&max_id=13872296\"\n    }\n}\n```\n"
     },
     "host": "api.mercury.com",
     "basePath": "/v1",
@@ -19,6 +19,7 @@
     "tags": [
         {
             "name": "Orders",
+            "description": "Order API covers all necessary methods to implement order management functionality for e-shops and users. Order can have following statuses :\n* **CREATED** - an order were created during this session\n* **WAITING_VERIFICATION** - customer didn't very both - phone and email\n* **WAITING_PHONE_VERIFICATION** - customer verified email but not phone. So waiting for phone verification\n* **WAITING_EMAIL_VERIFICATION** - customer verified phone but not e-mail. So waiting for email verification\n* **CUSTOMER_VERIFIED** - customer verified both - phone and email\n* **CUSTOMER_FORM_COLLECTED** - customer finished filling the form\n* **CUSTOMER_QUIT** - customer left form uncomplete\n* **PROCESSING** - processing workflow has been started\n* **CANCELLED** - order were canceled by customer\n* **DECLINED_BY_SHOP** - order were declined on the e-shops's side\n* **DECLINED_BY_CO** - order were declined by Credit Organization\n* **APPROVED** - order were approved by all the sides\n* **PAYED** - e-shop got money for this order\n* **SHIPPED** - customer got items from the order\n"
         },
         {
             "name": "Requests",
@@ -253,6 +254,41 @@
                     }
                 }
             }
+        },
+        "/request": {
+            "post": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "description": "Finally, force creation of the Order in the system",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/OrderCustomerInputEvent"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created order response",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/MercuryOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -288,6 +324,10 @@
                                 },
                                 "customer": {
                                     "$ref": "#/definitions/Customer"
+                                },
+                                "customer_token": {
+                                    "type": "string",
+                                    "description": "customer_token is used to sign future requests in order to authenticate user requests and attach events to this user."
                                 }
                             }
                         }
@@ -322,7 +362,7 @@
                 }
             }
         },
-        "OrderShopAcceptEvent": {
+        "UserChangedEvent": {
             "properties": {
                 "type": {
                     "type": "string"
@@ -336,14 +376,144 @@
                         "payload": {
                             "type": "object",
                             "properties": {
-                                "customer": {
-                                    "$ref": "#/definitions/Customer"
+                                "address": {
+                                    "$ref": "#/definitions/Address"
                                 },
                                 "session_id": {
                                     "type": "string",
                                     "description": "ID of session"
+                                },
+                                "token": {
+                                    "type": "string",
+                                    "description": "JWT of authorized shop contract"
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "OrderCustomerVerifyPhoneEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderCustomerVerifyEmailEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderCustomerAcceptEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderCustomerCancelEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderShopAcceptEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderShopCancelEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderShopShippedEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
                         }
                     }
                 }
@@ -361,32 +531,99 @@
                             "$ref": "#/definitions/EventMeta"
                         },
                         "payload": {
-                            "type": "object",
-                            "properties": {
-                                "customer": {
-                                    "$ref": "#/definitions/Customer"
-                                },
-                                "session_id": {
-                                    "type": "string",
-                                    "description": "ID of session"
-                                }
-                            }
+                            "type": "object"
                         }
                     }
                 }
             }
         },
-        "OrderUserAcceptEvent": {
-            "type": "object"
+        "OrderCOCancelEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderMercuryApproveEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderMercuryPayEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "OrderMercuryDeclineEvent": {
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
         },
         "MercuryOrder": {
             "type": "object",
             "properties": {
                 "order_id": {
+                    "type": "string",
+                    "description": "An identifier of order in Mercury"
+                },
+                "redirect_url": {
                     "type": "string"
                 },
                 "shop_order_id": {
                     "type": "string"
+                },
+                "order_tax_amount": {
+                    "type": "number"
                 },
                 "order_amount": {
                     "type": "number"
@@ -415,6 +652,9 @@
                     "type": "string"
                 },
                 "order_amount": {
+                    "type": "number"
+                },
+                "order_tax_amount": {
                     "type": "number"
                 },
                 "order_items": {
