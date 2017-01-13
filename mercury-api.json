@@ -255,6 +255,43 @@
                 }
             }
         },
+        "/order/requests": {
+            "get": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "order_id",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Orders",
+                    "Requests"
+                ],
+                "description": "List Requests created for order specified",
+                "responses": {
+                    "200": {
+                        "description": "List of Requests to CO attached to this order",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Request"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/request": {
             "post": {
                 "security": [
@@ -265,24 +302,127 @@
                 "tags": [
                     "Requests"
                 ],
-                "description": "Finally, force creation of the Order in the system",
+                "description": "Create Request",
                 "parameters": [
                     {
                         "name": "body",
                         "in": "body",
                         "schema": {
-                            "$ref": "#/definitions/OrderCustomerInputEvent"
+                            "$ref": "#/definitions/MercuryRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Created order response",
+                        "description": "Created request Entity",
                         "schema": {
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/MercuryOrder"
+                                    "$ref": "#/definitions/MercuryRequest"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "description": "Get the list of requests by params specified",
+                "responses": {
+                    "200": {
+                        "description": "An array of requests",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/MercuryRequest"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/request/{request_id}": {
+            "put": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "description": "Push event to corresponding request",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/MercuryRequest"
+                        }
+                    },
+                    {
+                        "name": "request_id",
+                        "in": "path",
+                        "type": "string",
+                        "description": "Id of the MercuryRequest entity",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated request Entity",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/MercuryRequest"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "security": [
+                    {
+                        "key": []
+                    }
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "description": "Get the MercuryRequest entity",
+                "parameters": [
+                    {
+                        "name": "request_id",
+                        "in": "path",
+                        "type": "string",
+                        "description": "Id of the MercuryRequest entity",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "MercuryRequest",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/MercuryRequest"
                                 }
                             }
                         }
@@ -389,6 +529,25 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "Order": {
+            "properties": {
+                "order_id": {
+                    "type": "string"
+                },
+                "order_amount": {
+                    "type": "number"
+                },
+                "order_tax_amount": {
+                    "type": "number"
+                },
+                "order_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OrderItem"
                     }
                 }
             }
@@ -609,6 +768,129 @@
                 }
             }
         },
+        "OrderItem": {
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "category_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "MercuryRequest": {
+            "description": "Mercury request is a request which exists only in Mercury system and used to create\nCO-specific requests. We need that because different CO's require different data to make decisions.<br/>\n  Available statuses: <br/>\n    * CREATED<br/>\n    * MATCHING_CO<br/>\n    * NO_MATCHES<br/> \n    * PROCESSING<br/>\n    * DECLINED<br/>\n    * WAITING_FOR_CUSTOMER<br/>\n    * CUSTOMER_APPROVED<br/>\n    * E-SHOP_APPROVED<br/>\n    * E-SHOP_DECLINED<br/>\n    * TIMEOUT<br/>\n    * SHIPPING<br/>\n    * SHPPED<br/>\n    * CLOSED<br/>\n",
+            "properties": {
+                "order_id": {
+                    "type": "string"
+                },
+                "requested_amount": {
+                    "type": "number"
+                },
+                "shop_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "CREATED",
+                        "MATCHING_CO",
+                        "NO_MATCHES",
+                        "PROCESSING",
+                        "DECLINED",
+                        "WAITING_FOR_CUSTOMER",
+                        "CUSTOMER_APPROVED",
+                        "E-SHOP_APPROVED",
+                        "E-SHOP_DECLINED",
+                        "TIMEOUT",
+                        "SHIPPING",
+                        "SHPPED",
+                        "CLOSED"
+                    ]
+                },
+                "requests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Request"
+                    }
+                }
+            }
+        },
+        "Request": {
+            "type": "object",
+            "description": "Request is an object specific to each Credit Organization as they require different set\nof fields to make decisions. We will map MercuryRequests to specific Requests in\norder to be able to work with different Credit Organizations and make integrations with new\nCO's easier\n"
+        },
+        "RequestEvent": {
+            "description": "Event related to request",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "meta": {
+                            "$ref": "#/definitions/EventMeta"
+                        },
+                        "payload": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "RequestVerifiedEvent": {
+            "type": "object"
+        },
+        "RequestDeclinedEvent": {
+            "type": "object"
+        },
+        "RequestMercuryProcessingStartedEvent": {
+            "type": "object"
+        },
+        "RequestCOProcessingStartedEvent": {
+            "type": "object"
+        },
+        "MercuryOrderItem": {
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "shop_category_id": {
+                    "type": "string"
+                }
+            }
+        },
         "MercuryOrder": {
             "type": "object",
             "properties": {
@@ -642,66 +924,6 @@
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "Order": {
-            "properties": {
-                "order_id": {
-                    "type": "string"
-                },
-                "order_amount": {
-                    "type": "number"
-                },
-                "order_tax_amount": {
-                    "type": "number"
-                },
-                "order_items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/OrderItem"
-                    }
-                }
-            }
-        },
-        "MercuryOrderItem": {
-            "properties": {
-                "title": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
-                "amount": {
-                    "type": "integer"
-                },
-                "category": {
-                    "type": "string"
-                },
-                "category_id": {
-                    "type": "string"
-                },
-                "shop_category_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "OrderItem": {
-            "properties": {
-                "title": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
-                "amount": {
-                    "type": "integer"
-                },
-                "category": {
-                    "type": "string"
-                },
-                "category_id": {
                     "type": "string"
                 }
             }
@@ -777,6 +999,9 @@
                     "$ref": "#/definitions/Address"
                 },
                 "fact_address": {
+                    "$ref": "#/definitions/Address"
+                },
+                "billing_address": {
                     "$ref": "#/definitions/Address"
                 }
             }
